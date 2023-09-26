@@ -1,0 +1,7 @@
+server:
+  port : 8082
+
+spring.kafka.producer:
+  bootstrap-servers: kafka:9092
+  key-serializer: org.apache.kafka.common.serialization.LongSerializer
+  value-serializer: org.springframework.kafka.support.serializer.JsonSerializer

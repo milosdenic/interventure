@@ -1,0 +1,81 @@
+version: '3'
+services:
+  elasticsearch:
+    image: elasticsearch:8.10.2
+    hostname: elasticsearch
+    container_name: elasticsearch
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      - cluster.name=elasticsearch
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_SERVERS: zookeeper:2888:3888  
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    hostname: kafka
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - 29092:29092
+      - 9092:9092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  init-kafka-topic:
+    image: confluentinc/cp-kafka:latest
+    hostname: init-kafka-topic
+    container_name: init-kafka-topic
+    depends_on:
+      - kafka
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      # blocks until kafka is reachable
+      kafka-topics --bootstrap-server kafka:9092 --list
+
+      echo -e 'Creating kafka topic'
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic Listings --replication-factor 1 --partitions 1
+
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server kafka:9092 --list
+      "
+  listing-browser:
+    image: listing-browser
+    container_name: listing-browser
+    build:
+      context: listing-browser
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
+      - elasticsearch
+    ports:
+      - 8081:8081
+    environment:
+      - SPRING_ELASTICSEARCH_URIS=elasticsearch:9200
+      - SPRING_DATA_ELASTICSEARCH_CLUSTER_NODES=elasticsearch:9200
+    restart: on-failure
+  listing-producer:
+    image: listing-producer
+    container_name: listing-producer
+    build:
+      context: listing-producer
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
+    ports:
+      - 8082:8082

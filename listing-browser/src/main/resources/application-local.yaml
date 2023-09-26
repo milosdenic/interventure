@@ -1,0 +1,6 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:29092
+  data:
+    elasticsearch:
+      cluster-nodes: localhost:9200
