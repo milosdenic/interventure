@@ -63,9 +63,10 @@ For exploring and testing the API, you can access the Swagger UI by visiting [ht
 
 
 ### Kafka Helper
-listing-producer is a small helper service, used to send messages to kafka easily. It doesn't have any validation, it was created just to help with sending listing messages.
+listing-producer is a small helper service, used to send messages to kafka easily. Since this service wasn't part of the taske, it doesn't have any validation, it was created just to help with sending listing messages and it's expected that messages are created in valid format.
 Listing Producer application will run on localhost:8082.
-Messages are in the format <Long, Json> (key=userId, value=listing)
+
+Kafka messages are in the format <Long, Json> (key=userId, value=listing)
 
 It supports following APIs.
 
@@ -90,5 +91,5 @@ Creating new and updating existing listing require body in the request:
 }
 ```
 
-Creating random listing doesn't require body since it will generate from provided data in the code.
+Creating random listing doesn't require body since it will generate kafa message from provided data in the code.
 
