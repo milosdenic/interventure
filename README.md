@@ -91,5 +91,5 @@ Creating new and updating existing listing require body in the request:
 }
 ```
 
-Creating random listing doesn't require body since it will generate kafa message from provided data in the code.
+Creating random listing doesn't require body since it will generate kafka message from the data provided in the code.
 
